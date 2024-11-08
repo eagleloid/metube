@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, of, Subject } from 'rxjs';
+import {Observable, ObservedValueOf, of, Subject} from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { MeTubeSocket } from './metube-socket';
 
@@ -27,6 +27,7 @@ export interface Download {
   filename: string;
   checked?: boolean;
   deleting?: boolean;
+  time_range?: string;
 }
 
 @Injectable({
@@ -103,8 +104,27 @@ export class DownloadsService {
     return of({status: 'error', msg: msg})
   }
 
-  public add(url: string, quality: string, format: string, folder: string, customNamePrefix: string, playlistStrictMode: boolean, playlistItemLimit: number, autoStart: boolean) {
-    return this.http.post<Status>('add', {url: url, quality: quality, format: format, folder: folder, custom_name_prefix: customNamePrefix, playlist_strict_mode: playlistStrictMode, playlist_item_limit: playlistItemLimit, auto_start: autoStart}).pipe(
+  public add(url: string,
+             quality: string,
+             format: string,
+             folder: string,
+             customNamePrefix: string,
+             playlistStrictMode: boolean,
+             playlistItemLimit: number,
+             autoStart: boolean,
+             timeRange?: string): Observable<ObservedValueOf<Observable<{ msg: any; status: 'error' }>> | Status> {
+    return this.http.post<Status>('add',
+      {
+        url,
+        quality,
+        format,
+        folder,
+        custom_name_prefix: customNamePrefix,
+        playlist_strict_mode: playlistStrictMode,
+        playlist_item_limit: playlistItemLimit,
+        auto_start: autoStart,
+        time_range: timeRange
+      }).pipe(
       catchError(this.handleHTTPError)
     );
   }

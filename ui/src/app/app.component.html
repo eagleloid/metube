@@ -45,8 +45,18 @@
   <form #f="ngForm">
     <div class="container add-url-box">
       <div class="row">
-        <div class="col add-url-component input-group">
-          <input type="text" autocomplete="off" spellcheck="false" class="form-control" placeholder="Video or playlist URL" name="addUrl" [(ngModel)]="addUrl" [disabled]="addInProgress || downloads.loading">
+        <div class="col-md-6 col-lg-9 add-url-component">
+          <div class="input-group">
+            <input type="text" autocomplete="off" spellcheck="false" class="form-control" placeholder="Video or playlist URL" name="addUrl" [(ngModel)]="addUrl" [disabled]="addInProgress || downloads.loading">
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3 add-url-component">
+          <div class="input-group">
+<!--            Needs formatting tlc -->
+            <span class="input-group-text">Time Range</span>
+            <input type="time" class="form-control" aria-label="Start Time" name="startTime" [(ngModel)]="startTime" [disabled]="addInProgress || downloads.loading">
+            <input type="time" class="form-control" aria-label="End Time" name="endTime" [(ngModel)]="endTime" [disabled]="addInProgress || downloads.loading">
+          </div>
         </div>
       </div>
       <div class="row">
@@ -137,6 +147,7 @@
           <th scope="col">Video</th>
           <th scope="col" style="width: 8rem;">Speed</th>
           <th scope="col" style="width: 7rem;">ETA</th>
+          <th scope="col" style="width: 7rem;">Video Range</th>
           <th scope="col" style="width: 6rem;"></th>
         </tr>
       </thead>
@@ -153,6 +164,7 @@
           </td>
           <td>{{ download.value.speed | speed }}</td>
           <td>{{ download.value.eta | eta }}</td>
+          <td>{{ download.value.time_range ?? 'Full'}}</td>
           <td>
             <div class="d-flex">
               <button *ngIf="download.value.status === 'pending'" type="button" class="btn btn-link" (click)="downloadItemByKey(download.key)"><fa-icon [icon]="faDownload"></fa-icon></button>
@@ -180,6 +192,7 @@
             <app-master-checkbox #doneMasterCheckbox [id]="'done'" [list]="downloads.done" (changed)="doneSelectionChanged($event)"></app-master-checkbox>
           </th>
           <th scope="col">Video</th>
+          <th scope="col">Video Duration</th>
           <th scope="col">File Size</th>
           <th scope="col" style="width: 8rem;"></th>
         </tr>
@@ -200,6 +213,9 @@
               <span *ngIf="download.value.msg"><br>{{download.value.msg}}</span>
               <span *ngIf="download.value.error"><br>Error: {{download.value.error}}</span>
             </ng-template>
+          </td>
+          <td>
+            <span *ngIf="download.value.time_range">{{ download.value.time_range }}</span>
           </td>
           <td>
             <span *ngIf="download.value.size">{{ download.value.size | fileSize }}</span>

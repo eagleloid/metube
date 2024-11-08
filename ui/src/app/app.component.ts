@@ -30,6 +30,9 @@ export class AppComponent implements AfterViewInit {
   themes: Theme[] = Themes;
   activeTheme: Theme;
   customDirs$: Observable<string[]>;
+  startTime: string;
+  endTime: string;
+  private timeRange: string; // TODO: make this calculated
 
   @ViewChild('queueMasterCheckbox') queueMasterCheckbox: MasterCheckboxComponent;
   @ViewChild('queueDelSelected') queueDelSelected: ElementRef;
@@ -193,19 +196,53 @@ export class AppComponent implements AfterViewInit {
     this.quality = exists ? this.quality : 'best'
   }
 
-  addDownload(url?: string, quality?: string, format?: string, folder?: string, customNamePrefix?: string, playlistStrictMode?: boolean, playlistItemLimit?: number, autoStart?: boolean) {
-    url = url ?? this.addUrl
-    quality = quality ?? this.quality
-    format = format ?? this.format
-    folder = folder ?? this.folder
-    customNamePrefix = customNamePrefix ?? this.customNamePrefix
-    playlistStrictMode = playlistStrictMode ?? this.playlistStrictMode
-    playlistItemLimit = playlistItemLimit ?? this.playlistItemLimit
-    autoStart = autoStart ?? this.autoStart
+  /**
+   * Makes call to YTDL python service to Download files[s] from the specified URL with the provided options
+   *
+   * @param [url] - The URL of the file to be downloaded
+   * @param [quality] - The quality of the downloaded file
+   * @param [format] - The format of the downloaded file
+   * @param [folder] - The folder where the file will be downloaded
+   * @param [customNamePrefix] - A custom prefix for the downloaded file's name
+   * @param [playlistStrictMode] - Indicates if playlist download should be in strict mode
+   * @param [playlistItemLimit] - The maximum number of items to be downloaded from a playlist
+   * @param [autoStart] - Indicates if download should start automatically
+   * @param [timeRange] - The start-end time range to download from the file
+   *
+   */
+  addDownload(url?: string,
+              quality?: string,
+              format?: string,
+              folder?: string,
+              customNamePrefix?: string,
+              playlistStrictMode?: boolean,
+              playlistItemLimit?: number,
+              autoStart?: boolean,
+              timeRange?: string): void {
+    url = url ?? this.addUrl;
+    quality = quality ?? this.quality;
+    format = format ?? this.format;
+    folder = folder ?? this.folder;
+    customNamePrefix = customNamePrefix ?? this.customNamePrefix;
+    playlistStrictMode = playlistStrictMode ?? this.playlistStrictMode;
+    playlistItemLimit = playlistItemLimit ?? this.playlistItemLimit;
+    autoStart = autoStart ?? this.autoStart;
 
-    console.debug('Downloading: url='+url+' quality='+quality+' format='+format+' folder='+folder+' customNamePrefix='+customNamePrefix+' playlistStrictMode='+playlistStrictMode+' playlistItemLimit='+playlistItemLimit+' autoStart='+autoStart);
+    // TODO: should playListItemLimit be set to 1 automatically if timeRange is selected? or let user reap what they sow?
+
+    console.debug(`Downloading: url=${url} quality=${quality} format=${format} folder=${folder}
+     customNamePrefix=${customNamePrefix} playlistStrictMode=${playlistStrictMode}
+      playlistItemLimit=${playlistItemLimit} autoStart=${autoStart} timeRange=${timeRange}`);
     this.addInProgress = true;
-    this.downloads.add(url, quality, format, folder, customNamePrefix, playlistStrictMode, playlistItemLimit, autoStart).subscribe((status: Status) => {
+    this.downloads.add(url,
+      quality,
+      format,
+      folder,
+      customNamePrefix,
+      playlistStrictMode,
+      playlistItemLimit,
+      autoStart,
+      timeRange).subscribe((status: Status) => {
       if (status.status === 'error') {
         alert(`Error adding URL: ${status.msg}`);
       } else {
@@ -220,7 +257,7 @@ export class AppComponent implements AfterViewInit {
   }
 
   retryDownload(key: string, download: Download) {
-    this.addDownload(download.url, download.quality, download.format, download.folder, download.custom_name_prefix, download.playlist_strict_mode, download.playlist_item_limit, true);
+    this.addDownload(download.url, download.quality, download.format, download.folder, download.custom_name_prefix, download.playlist_strict_mode, download.playlist_item_limit, true, download.time_range);
     this.downloads.delById('done', [key]).subscribe();
   }
 
